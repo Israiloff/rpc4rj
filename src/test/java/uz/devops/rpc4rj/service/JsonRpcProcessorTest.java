@@ -42,15 +42,6 @@ class JsonRpcProcessorTest {
     private ObjectMapper objectMapper;
 
     @Test
-    void echoApiOneTest() {
-        log.debug("echoTest started");
-
-        var result = webTestClient.get().uri("/api/rpc/echo").exchange().expectStatus().isOk().returnResult(String.class).getResponseBody();
-
-        StepVerifier.create(result).expectNextMatches(s -> s.equals("SUCCESS")).verifyComplete();
-    }
-
-    @Test
     void monoMethodSuccessApiOneTest() {
         log.debug("monoMethodTest started");
 
