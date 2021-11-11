@@ -1,4 +1,4 @@
-package uz.devops.rpc4rj.service.primitive;
+package uz.devops.rpc4rj.impl;
 
 import lombok.Value;
 

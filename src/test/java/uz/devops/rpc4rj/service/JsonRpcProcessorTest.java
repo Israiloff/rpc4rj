@@ -12,10 +12,10 @@ import reactor.test.StepVerifier;
 import uz.devops.rpc4rj.IntegrationTest;
 import uz.devops.rpc4rj.error.exception.InvalidParamsException;
 import uz.devops.rpc4rj.error.exception.MethodNotFoundException;
+import uz.devops.rpc4rj.impl.*;
 import uz.devops.rpc4rj.model.JsonRpcError;
 import uz.devops.rpc4rj.model.JsonRpcRequest;
 import uz.devops.rpc4rj.model.JsonRpcResponse;
-import uz.devops.rpc4rj.service.primitive.*;
 
 import java.lang.reflect.InvocationTargetException;
 
