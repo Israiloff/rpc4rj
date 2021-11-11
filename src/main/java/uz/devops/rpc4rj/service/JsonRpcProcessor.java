@@ -7,5 +7,5 @@ import uz.devops.rpc4rj.model.JsonRpcRequest;
 import javax.validation.constraints.NotNull;
 
 public interface JsonRpcProcessor {
-    Mono<ResponseEntity<?>> process(@NotNull JsonRpcRequest request) throws Exception;
+    Mono<ResponseEntity<?>> process(@NotNull JsonRpcRequest request, String uri) throws Exception;
 }

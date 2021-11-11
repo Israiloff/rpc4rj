@@ -6,8 +6,8 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 @Value
-public class JsonRpcInfo {
-
+public class JsonRpcServiceInfo {
+    String uri;
     Object instance;
     String methodName;
     Method method;

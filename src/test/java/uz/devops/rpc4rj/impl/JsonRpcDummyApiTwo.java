@@ -15,31 +15,26 @@ import java.util.ArrayList;
 @Slf4j
 @Service
 @Validated
-@RpcService
-public class JsonRpcServiceDummyImpl {
+@RpcService(JsonRpcDummyApiTwo.URI)
+public class JsonRpcDummyApiTwo {
 
     public static final String METHOD_DUMMY_MONO = "dummyMethodMono";
     public static final String METHOD_DUMMY_FLUX = "dummyMethodFlux";
+    public static final String URI = "/api/rpc/dummy/two";
 
     @RpcMethod(METHOD_DUMMY_MONO)
-    public Mono<DummyResponse> dummyMono(
-            @Valid @RpcParam("requestOne") DummyRequestOne requestOne,
-            @Valid @RpcParam("requestTwo") DummyRequestTwo requestTwo
-    ) {
+    public Mono<DummyResponse> dummyMono(@Valid @RpcParam("requestOne") DummyRequestOne requestOne) {
         log.trace("dummyMethod started");
-        return Mono.just(new DummyResponse(requestOne.getData() + requestTwo.getData(), "SUCCESS"));
+        return Mono.just(new DummyResponse(requestOne.getData(), "SUCCESS"));
     }
 
     @RpcMethod(METHOD_DUMMY_FLUX)
-    public Flux<DummyResponse> dummyFlux(
-            @Valid @RpcParam("requestOne") DummyRequestOne requestOne,
-            @Valid @RpcParam("requestTwo") DummyRequestTwo requestTwo
-    ) {
+    public Flux<DummyResponse> dummyFlux(@Valid @RpcParam("requestOne") DummyRequestOne requestOne) {
         log.trace("dummyMethod started");
         var result = new ArrayList<DummyResponse>();
-        var requestData = requestOne.getData() + requestTwo.getData();
+        var requestData = requestOne.getData();
 
-        for (var i = 0; i < 5; i++) {
+        for (var i = 0; i < 2; i++) {
             addElement(result, requestData, i);
         }
 

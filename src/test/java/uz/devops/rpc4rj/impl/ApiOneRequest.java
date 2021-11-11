@@ -5,7 +5,7 @@ import lombok.Value;
 import javax.validation.constraints.NotNull;
 
 @Value
-public class DummyRequest {
+public class ApiOneRequest {
 
     @NotNull
     DummyRequestOne requestOne;

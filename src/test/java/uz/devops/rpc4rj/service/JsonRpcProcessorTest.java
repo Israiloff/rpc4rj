@@ -32,6 +32,8 @@ class JsonRpcProcessorTest {
     public static final String FLUX_DATA_2 = "FLUX2";
     public static final String MONO_DATA_1 = "1";
     public static final String MONO_DATA_2 = "2";
+    public static final String URI_API_1 = JsonRpcDummyApiOne.URI;
+    public static final String URI_API_2 = JsonRpcDummyApiTwo.URI;
 
     @Autowired
     private WebTestClient webTestClient;
@@ -40,7 +42,7 @@ class JsonRpcProcessorTest {
     private ObjectMapper objectMapper;
 
     @Test
-    void echoTest() {
+    void echoApiOneTest() {
         log.debug("echoTest started");
 
         var result = webTestClient.get().uri("/api/rpc/echo").exchange().expectStatus().isOk().returnResult(String.class).getResponseBody();
@@ -49,15 +51,15 @@ class JsonRpcProcessorTest {
     }
 
     @Test
-    void monoMethodSuccessTest() {
+    void monoMethodSuccessApiOneTest() {
         log.debug("monoMethodTest started");
 
-        var param = new DummyRequest(new DummyRequestOne(MONO_DATA_1), new DummyRequestTwo(MONO_DATA_2));
-        var request = new JsonRpcRequest(MONO_REQUEST_ID, JSONRPC, JsonRpcServiceDummyImpl.METHOD_DUMMY_MONO, param);
+        var param = new ApiOneRequest(new DummyRequestOne(MONO_DATA_1), new DummyRequestTwo(MONO_DATA_2));
+        var request = new JsonRpcRequest(MONO_REQUEST_ID, JSONRPC, JsonRpcDummyApiOne.METHOD_DUMMY_MONO, param);
 
         var result = webTestClient
                 .post()
-                .uri("/api/rpc/reactive")
+                .uri(URI_API_1)
                 .accept(MEDIA_TYPE)
                 .bodyValue(request)
                 .exchange()
@@ -79,15 +81,15 @@ class JsonRpcProcessorTest {
     }
 
     @Test
-    void fluxMethodSuccessTest() {
+    void fluxMethodSuccessApiOneTest() {
         log.debug("fluxMethodTest started");
 
-        var param = new DummyRequest(new DummyRequestOne(FLUX_DATA_1), new DummyRequestTwo(FLUX_DATA_2));
-        var request = new JsonRpcRequest(FLUX_REQUEST_ID, JSONRPC, JsonRpcServiceDummyImpl.METHOD_DUMMY_FLUX, param);
+        var param = new ApiOneRequest(new DummyRequestOne(FLUX_DATA_1), new DummyRequestTwo(FLUX_DATA_2));
+        var request = new JsonRpcRequest(FLUX_REQUEST_ID, JSONRPC, JsonRpcDummyApiOne.METHOD_DUMMY_FLUX, param);
 
         var result = webTestClient
                 .post()
-                .uri("/api/rpc/reactive")
+                .uri(URI_API_1)
                 .accept(MEDIA_TYPE)
                 .bodyValue(request)
                 .exchange()
@@ -139,15 +141,15 @@ class JsonRpcProcessorTest {
     }
 
     @Test
-    void methodNotFoundErrorTest() {
+    void methodNotFoundErrorApiOneTest() {
         log.debug("methodNotFoundErrorTest started");
 
-        var param = new DummyRequest(new DummyRequestOne(MONO_DATA_1), new DummyRequestTwo(MONO_DATA_2));
+        var param = new ApiOneRequest(new DummyRequestOne(MONO_DATA_1), new DummyRequestTwo(MONO_DATA_2));
         var request = new JsonRpcRequest(MONO_REQUEST_ID, JSONRPC, "NONE_METHOD", param);
 
         var result = webTestClient
                 .post()
-                .uri("/api/rpc/reactive")
+                .uri(URI_API_1)
                 .accept(MEDIA_TYPE)
                 .bodyValue(request)
                 .exchange()
@@ -170,15 +172,15 @@ class JsonRpcProcessorTest {
     }
 
     @Test
-    void invalidParamsErrorTest() {
+    void invalidParamsErrorApiOneTest() {
         log.debug("invalidParamsErrorTest started");
 
         var param = new DummyRequestOne(MONO_DATA_1);
-        var request = new JsonRpcRequest(MONO_REQUEST_ID, JSONRPC, JsonRpcServiceDummyImpl.METHOD_DUMMY_MONO, param);
+        var request = new JsonRpcRequest(MONO_REQUEST_ID, JSONRPC, JsonRpcDummyApiOne.METHOD_DUMMY_MONO, param);
 
         var result = webTestClient
                 .post()
-                .uri("/api/rpc/reactive")
+                .uri(URI_API_1)
                 .accept(MEDIA_TYPE)
                 .bodyValue(request)
                 .exchange()
@@ -201,15 +203,15 @@ class JsonRpcProcessorTest {
     }
 
     @Test
-    void argsValidationErrorTest() {
+    void argsValidationErrorApiOneTest() {
         log.debug("argsValidationErrorTest started");
 
-        var param = new DummyRequest(new DummyRequestOne(null), new DummyRequestTwo(MONO_DATA_2));
-        var request = new JsonRpcRequest(MONO_REQUEST_ID, JSONRPC, JsonRpcServiceDummyImpl.METHOD_DUMMY_MONO, param);
+        var param = new ApiOneRequest(new DummyRequestOne(null), new DummyRequestTwo(MONO_DATA_2));
+        var request = new JsonRpcRequest(MONO_REQUEST_ID, JSONRPC, JsonRpcDummyApiOne.METHOD_DUMMY_MONO, param);
 
         var result = webTestClient
                 .post()
-                .uri("/api/rpc/reactive")
+                .uri(URI_API_1)
                 .accept(MEDIA_TYPE)
                 .bodyValue(request)
                 .exchange()
@@ -229,6 +231,75 @@ class JsonRpcProcessorTest {
         Assertions.assertEquals(InvocationTargetException.class.getSimpleName(), error.getData());
         Assertions.assertNotNull(error.getMessage());
         Assertions.assertEquals(-32600, error.getCode());
+    }
+
+    @Test
+    void monoMethodSuccessApiTwoTest() {
+        log.debug("monoMethodTest started");
+
+        var param = new ApiTwoRequest(new DummyRequestOne(FLUX_DATA_1));
+        var request = new JsonRpcRequest(MONO_REQUEST_ID, JSONRPC, JsonRpcDummyApiTwo.METHOD_DUMMY_MONO, param);
+
+        var result = webTestClient
+                .post()
+                .uri(URI_API_2)
+                .accept(MEDIA_TYPE)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectHeader()
+                .contentType(MEDIA_TYPE)
+                .returnResult(JsonRpcResponse.class)
+                .getResponseBody()
+                .next()
+                .block();
+
+        Assertions.assertNotNull(result);
+        assertBaseParams(result, MONO_REQUEST_ID);
+
+        var resultParam = objectMapper.convertValue(result.getResult(), DummyResponse.class);
+        Assertions.assertEquals(param.getRequestOne().getData(), resultParam.getRequestData());
+        Assertions.assertEquals("SUCCESS", resultParam.getResult());
+    }
+
+    @Test
+    void fluxMethodSuccessApiTwoTest() {
+        log.debug("fluxMethodTest started");
+
+        var param = new ApiTwoRequest(new DummyRequestOne(FLUX_DATA_1));
+        var request = new JsonRpcRequest(FLUX_REQUEST_ID, JSONRPC, JsonRpcDummyApiTwo.METHOD_DUMMY_FLUX, param);
+
+        var result = webTestClient
+                .post()
+                .uri(URI_API_2)
+                .accept(MEDIA_TYPE)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectHeader()
+                .contentType(MEDIA_TYPE)
+                .returnResult(JsonRpcResponse.class)
+                .getResponseBody();
+
+        StepVerifier
+                .create(result)
+                .expectNextMatches(
+                        jsonRpcResponse -> {
+                            assertBaseParams(jsonRpcResponse, FLUX_REQUEST_ID);
+                            var response = objectMapper.convertValue(jsonRpcResponse.getResult(), DummyResponse.class);
+                            return response.getResult().equals("0");
+                        }
+                )
+                .expectNextMatches(
+                        jsonRpcResponse -> {
+                            assertBaseParams(jsonRpcResponse, FLUX_REQUEST_ID);
+                            var response = objectMapper.convertValue(jsonRpcResponse.getResult(), DummyResponse.class);
+                            return response.getResult().equals("1");
+                        }
+                )
+                .verifyComplete();
     }
 
     private void assertBaseParams(JsonRpcResponse response, Long requestId) {
