@@ -17,7 +17,7 @@ import uz.devops.rpc4rj.model.JsonRpcError;
 import uz.devops.rpc4rj.model.JsonRpcRequest;
 import uz.devops.rpc4rj.model.JsonRpcResponse;
 
-import java.lang.reflect.InvocationTargetException;
+import javax.validation.ConstraintViolationException;
 
 @Slf4j
 @IntegrationTest
@@ -219,9 +219,40 @@ class JsonRpcProcessorTest {
         assertBaseParams(result, MONO_REQUEST_ID);
 
         var error = objectMapper.convertValue(result.getError(), JsonRpcError.class);
-        Assertions.assertEquals(InvocationTargetException.class.getSimpleName(), error.getData());
+        Assertions.assertEquals(ConstraintViolationException.class.getSimpleName(), error.getData());
         Assertions.assertNotNull(error.getMessage());
         Assertions.assertEquals(-32600, error.getCode());
+    }
+
+    @Test
+    void userDefinedErrorApiOneTest() {
+        log.debug("userDefinedErrorApiOneTest started");
+
+        var param = new ApiOneRequest(new DummyRequestOne(MONO_DATA_1), new DummyRequestTwo(MONO_DATA_2));
+        var request = new JsonRpcRequest(MONO_REQUEST_ID, JSONRPC, JsonRpcDummyApiOne.METHOD_DUMMY_MONO_CUSTOM_ERROR, param);
+
+        var result = webTestClient
+                .post()
+                .uri(URI_API_1)
+                .accept(MEDIA_TYPE)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectHeader()
+                .contentType(MEDIA_TYPE)
+                .returnResult(JsonRpcResponse.class)
+                .getResponseBody()
+                .next()
+                .block();
+
+        Assertions.assertNotNull(result);
+        assertBaseParams(result, MONO_REQUEST_ID);
+
+        var error = objectMapper.convertValue(result.getError(), JsonRpcError.class);
+        Assertions.assertEquals(JsonRpcDummyApiOne.DUMMY_DATA, error.getData());
+        Assertions.assertEquals(JsonRpcDummyApiOne.DUMMY_MESSAGE, error.getMessage());
+        Assertions.assertEquals(JsonRpcDummyApiOne.DUMMY_ERROR_CODE, error.getCode());
     }
 
     @Test

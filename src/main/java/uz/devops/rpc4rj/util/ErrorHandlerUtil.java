@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import uz.devops.rpc4rj.error.base.JsonRpcExceptionDetails;
+import uz.devops.rpc4rj.error.base.JsonRpcErrorDetails;
 import uz.devops.rpc4rj.model.JsonRpcError;
 import uz.devops.rpc4rj.model.JsonRpcRequest;
 import uz.devops.rpc4rj.model.JsonRpcResponse;
@@ -19,7 +19,7 @@ public class ErrorHandlerUtil {
 
     public boolean isDetailedError(Throwable e) {
         log.trace("isDetailedError started");
-        return Arrays.asList(e.getClass().getInterfaces()).contains(JsonRpcExceptionDetails.class);
+        return Arrays.asList(e.getClass().getInterfaces()).contains(JsonRpcErrorDetails.class);
     }
 
     public JsonRpcResponse buildResponse(JsonRpcRequest request, Integer code, Throwable e) {

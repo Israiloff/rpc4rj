@@ -1,12 +1,12 @@
-package uz.devops.rpc4rj.error.handler.impl;
+package uz.devops.rpc4rj.service.impl.error;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import uz.devops.rpc4rj.error.base.JsonRpcExceptionDetails;
-import uz.devops.rpc4rj.error.handler.ErrorHandler;
+import uz.devops.rpc4rj.error.base.JsonRpcErrorDetails;
 import uz.devops.rpc4rj.model.JsonRpcRequest;
 import uz.devops.rpc4rj.model.JsonRpcResponse;
+import uz.devops.rpc4rj.service.ErrorHandler;
 import uz.devops.rpc4rj.util.ErrorHandlerUtil;
 
 @Slf4j
@@ -28,7 +28,7 @@ public class CommonErrorHandler implements ErrorHandler {
         log.trace("buildResponse started");
 
         if (util.isDetailedError(e)) {
-            var detailed = ((JsonRpcExceptionDetails) e);
+            var detailed = ((JsonRpcErrorDetails) e);
             return util.buildResponse(request, detailed.getCode(), e, detailed.getMessage());
         }
 

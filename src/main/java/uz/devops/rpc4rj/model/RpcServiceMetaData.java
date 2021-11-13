@@ -11,15 +11,13 @@ import java.util.List;
 public class RpcServiceMetaData {
 
     private final List<JsonRpcServiceInfo> rpcInfoList;
-    private final ResolverUtil util;
 
     public RpcServiceMetaData(ResolverUtil util) {
-        log.trace("");
-        this.util = util;
-        this.rpcInfoList = this.util.getRpcInfoList();
+        this.rpcInfoList = util.getRpcInfoList();
     }
 
     public List<JsonRpcServiceInfo> getRpcInfoList() {
+        log.trace("RpcServiceMetaData started");
         return rpcInfoList;
     }
 }

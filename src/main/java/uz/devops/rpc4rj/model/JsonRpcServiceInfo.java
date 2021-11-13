@@ -12,4 +12,5 @@ public class JsonRpcServiceInfo {
     String methodName;
     Method method;
     List<JsonRpcParamInfo> params;
+    List<JsonRpcErrorInfo> errors;
 }
