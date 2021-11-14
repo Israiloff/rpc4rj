@@ -11,6 +11,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.test.StepVerifier;
 import uz.devops.rpc4rj.IntegrationTest;
 import uz.devops.rpc4rj.error.exception.InvalidParamsException;
+import uz.devops.rpc4rj.error.exception.JsonRpcVersionValidationException;
 import uz.devops.rpc4rj.error.exception.MethodNotFoundException;
 import uz.devops.rpc4rj.impl.*;
 import uz.devops.rpc4rj.model.JsonRpcError;
@@ -34,6 +35,7 @@ class RJRpcProcessorTest {
     public static final String MONO_DATA_2 = "2";
     public static final String URI_API_1 = JsonRpcDummyApiOne.URI;
     public static final String URI_API_2 = JsonRpcDummyApiTwo.URI;
+    public static final String WRONG_RPC_VERSION = "1";
 
     @Autowired
     private WebTestClient webTestClient;
@@ -253,6 +255,37 @@ class RJRpcProcessorTest {
         Assertions.assertEquals(JsonRpcDummyApiOne.DUMMY_DATA, error.getData());
         Assertions.assertEquals(JsonRpcDummyApiOne.DUMMY_MESSAGE, error.getMessage());
         Assertions.assertEquals(JsonRpcDummyApiOne.DUMMY_ERROR_CODE, error.getCode());
+    }
+
+    @Test
+    void versionValidationErrorApiOneTest() {
+        log.debug("versionValidationErrorApiOneTest started");
+
+        var param = new ApiOneRequest(new DummyRequestOne(null), new DummyRequestTwo(MONO_DATA_2));
+        var request = new JsonRpcRequest(MONO_REQUEST_ID, WRONG_RPC_VERSION, JsonRpcDummyApiOne.METHOD_DUMMY_MONO, param);
+
+        var result = webTestClient
+                .post()
+                .uri(URI_API_1)
+                .accept(MEDIA_TYPE)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectHeader()
+                .contentType(MEDIA_TYPE)
+                .returnResult(JsonRpcResponse.class)
+                .getResponseBody()
+                .next()
+                .block();
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(MONO_REQUEST_ID, result.getId());
+
+        var error = objectMapper.convertValue(result.getError(), JsonRpcError.class);
+        Assertions.assertEquals(JsonRpcVersionValidationException.class.getSimpleName(), error.getData());
+        Assertions.assertNotNull(error.getMessage());
+        Assertions.assertEquals(-32600, error.getCode());
     }
 
     @Test

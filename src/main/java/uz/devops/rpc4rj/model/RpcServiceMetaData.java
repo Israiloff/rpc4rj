@@ -2,7 +2,7 @@ package uz.devops.rpc4rj.model;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import uz.devops.rpc4rj.util.ResolverUtil;
+import uz.devops.rpc4rj.util.RJRpcProcessorUtil;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ public class RpcServiceMetaData {
 
     private final List<JsonRpcServiceInfo> rpcInfoList;
 
-    public RpcServiceMetaData(ResolverUtil util) {
+    public RpcServiceMetaData(RJRpcProcessorUtil util) {
         this.rpcInfoList = util.getRpcInfoList();
     }
 

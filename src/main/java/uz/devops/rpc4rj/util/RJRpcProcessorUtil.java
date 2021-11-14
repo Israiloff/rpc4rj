@@ -20,6 +20,7 @@ import uz.devops.rpc4rj.annotation.RJRpcParam;
 import uz.devops.rpc4rj.annotation.RJRpcService;
 import uz.devops.rpc4rj.error.exception.InvalidParamsException;
 import uz.devops.rpc4rj.error.exception.InvalidWrapperException;
+import uz.devops.rpc4rj.error.exception.JsonRpcVersionValidationException;
 import uz.devops.rpc4rj.error.exception.MethodParamsMetaDataException;
 import uz.devops.rpc4rj.model.*;
 
@@ -33,11 +34,23 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 @AllArgsConstructor
-public class ResolverUtil {
+public class RJRpcProcessorUtil {
 
     public static final ArrayList<JsonRpcErrorInfo> EMPTY_ERROR_LIST = new ArrayList<>();
+    public static final String JSON_RPC_VERSION = "2.0";
     private final ApplicationContext context;
     private final ObjectMapper objectMapper;
+
+    public void validateRequest(JsonRpcRequest request) throws JsonRpcVersionValidationException {
+        log.trace("validateRequest started");
+
+        if (Objects.equals(request.getJsonrpc(), JSON_RPC_VERSION)) {
+            return;
+        }
+
+        log.trace("RPC version validation error occurred");
+        throw new JsonRpcVersionValidationException(JSON_RPC_VERSION);
+    }
 
     public List<JsonRpcServiceInfo> getRpcInfoList() {
         log.trace("getRpcInfoList started");

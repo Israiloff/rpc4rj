@@ -9,7 +9,7 @@ import uz.devops.rpc4rj.error.exception.MethodNotFoundException;
 import uz.devops.rpc4rj.model.JsonRpcRequest;
 import uz.devops.rpc4rj.model.RpcServiceMetaData;
 import uz.devops.rpc4rj.service.RJRpcProcessor;
-import uz.devops.rpc4rj.util.ResolverUtil;
+import uz.devops.rpc4rj.util.RJRpcProcessorUtil;
 
 import javax.validation.constraints.NotNull;
 
@@ -19,10 +19,12 @@ import javax.validation.constraints.NotNull;
 public class RJRpcProcessorImpl implements RJRpcProcessor {
 
     private final RpcServiceMetaData metaData;
-    private final ResolverUtil util;
+    private final RJRpcProcessorUtil util;
 
     public Mono<ResponseEntity<?>> process(@NotNull JsonRpcRequest request, String uri) throws Exception {
         log.debug("endpoint started for request : {}", request);
+
+        util.validateRequest(request);
 
         var jsonRpcInfo = metaData
                 .getRpcInfoList()
