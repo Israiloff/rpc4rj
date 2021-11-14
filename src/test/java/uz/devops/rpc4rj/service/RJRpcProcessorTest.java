@@ -22,7 +22,7 @@ import javax.validation.ConstraintViolationException;
 @Slf4j
 @IntegrationTest
 @AutoConfigureWebTestClient(timeout = "600000")
-class JsonRpcProcessorTest {
+class RJRpcProcessorTest {
 
     public static final MediaType MEDIA_TYPE = MediaType.APPLICATION_STREAM_JSON;
     public static final String JSONRPC = "2.0";

@@ -5,9 +5,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import uz.devops.rpc4rj.annotation.RpcMethod;
-import uz.devops.rpc4rj.annotation.RpcParam;
-import uz.devops.rpc4rj.annotation.RpcService;
+import uz.devops.rpc4rj.annotation.RJRpcMethod;
+import uz.devops.rpc4rj.annotation.RJRpcParam;
+import uz.devops.rpc4rj.annotation.RJRpcService;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -15,21 +15,21 @@ import java.util.ArrayList;
 @Slf4j
 @Service
 @Validated
-@RpcService(JsonRpcDummyApiTwo.URI)
+@RJRpcService(JsonRpcDummyApiTwo.URI)
 public class JsonRpcDummyApiTwo {
 
     public static final String METHOD_DUMMY_MONO = "dummyMethodMono";
     public static final String METHOD_DUMMY_FLUX = "dummyMethodFlux";
     public static final String URI = "/api/rpc/dummy/two";
 
-    @RpcMethod(METHOD_DUMMY_MONO)
-    public Mono<DummyResponse> dummyMono(@Valid @RpcParam("requestOne") DummyRequestOne requestOne) {
+    @RJRpcMethod(METHOD_DUMMY_MONO)
+    public Mono<DummyResponse> dummyMono(@Valid @RJRpcParam("requestOne") DummyRequestOne requestOne) {
         log.trace("dummyMethod started");
         return Mono.just(new DummyResponse(requestOne.getData(), "SUCCESS"));
     }
 
-    @RpcMethod(METHOD_DUMMY_FLUX)
-    public Flux<DummyResponse> dummyFlux(@Valid @RpcParam("requestOne") DummyRequestOne requestOne) {
+    @RJRpcMethod(METHOD_DUMMY_FLUX)
+    public Flux<DummyResponse> dummyFlux(@Valid @RJRpcParam("requestOne") DummyRequestOne requestOne) {
         log.trace("dummyMethod started");
         var result = new ArrayList<DummyResponse>();
         var requestData = requestOne.getData();

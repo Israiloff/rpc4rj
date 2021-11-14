@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 import uz.devops.rpc4rj.error.exception.MethodNotFoundException;
 import uz.devops.rpc4rj.model.JsonRpcRequest;
 import uz.devops.rpc4rj.model.RpcServiceMetaData;
-import uz.devops.rpc4rj.service.JsonRpcProcessor;
+import uz.devops.rpc4rj.service.RJRpcProcessor;
 import uz.devops.rpc4rj.util.ResolverUtil;
 
 import javax.validation.constraints.NotNull;
@@ -16,7 +16,7 @@ import javax.validation.constraints.NotNull;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class JsonRpcProcessorImpl implements JsonRpcProcessor {
+public class RJRpcProcessorImpl implements RJRpcProcessor {
 
     private final RpcServiceMetaData metaData;
     private final ResolverUtil util;

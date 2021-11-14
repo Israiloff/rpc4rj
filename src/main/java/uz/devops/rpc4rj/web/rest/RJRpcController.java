@@ -11,7 +11,7 @@ import javax.annotation.PostConstruct;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-public class JsonRpcController {
+public class RJRpcController {
 
     public static final String REACTIVE_REQUEST_KEY = "reactiveRequest";
 

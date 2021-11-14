@@ -14,10 +14,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import uz.devops.rpc4rj.annotation.RpcErrors;
-import uz.devops.rpc4rj.annotation.RpcMethod;
-import uz.devops.rpc4rj.annotation.RpcParam;
-import uz.devops.rpc4rj.annotation.RpcService;
+import uz.devops.rpc4rj.annotation.RJRpcErrors;
+import uz.devops.rpc4rj.annotation.RJRpcMethod;
+import uz.devops.rpc4rj.annotation.RJRpcParam;
+import uz.devops.rpc4rj.annotation.RJRpcService;
 import uz.devops.rpc4rj.error.exception.InvalidParamsException;
 import uz.devops.rpc4rj.error.exception.InvalidWrapperException;
 import uz.devops.rpc4rj.error.exception.MethodParamsMetaDataException;
@@ -52,7 +52,7 @@ public class ResolverUtil {
     private Set<Class<?>> getRpcImplTypes() {
         log.trace("getRpcImplTypes started");
         return new Reflections(getConfigurationBuilder())
-                .getTypesAnnotatedWith(RpcService.class);
+                .getTypesAnnotatedWith(RJRpcService.class);
     }
 
     private ConfigurationBuilder getConfigurationBuilder() {
@@ -71,7 +71,7 @@ public class ResolverUtil {
 
         return Arrays
                 .stream(service.getDeclaredMethods())
-                .filter(method -> method.getAnnotation(RpcMethod.class) != null)
+                .filter(method -> method.getAnnotation(RJRpcMethod.class) != null)
                 .map(method -> getJsonRpcInfo(bean, method, service))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
@@ -79,24 +79,34 @@ public class ResolverUtil {
 
     public JsonRpcServiceInfo getJsonRpcInfo(Object bean, Method method, Class<?> service) {
         log.trace("getJsonRpcInfo started for bean with name : {}", bean.getClass().getSimpleName());
-        var methodAnnotation = method.getAnnotation(RpcMethod.class);
+        var methodAnnotation = method.getAnnotation(RJRpcMethod.class);
         var errorInfos = getErrorInfos(method);
         var params = getParamInfo(method);
         return methodAnnotation == null
                 ? null
-                : new JsonRpcServiceInfo(service.getAnnotation(RpcService.class).value(),
+                : new JsonRpcServiceInfo(service.getAnnotation(RJRpcService.class).value(),
                 bean, methodAnnotation.value(), method, params, errorInfos);
     }
 
     public List<JsonRpcErrorInfo> getErrorInfos(Method method) {
         log.trace("getErrorInfos started");
-        var errors = method.getAnnotation(RpcErrors.class);
+        var errors = method.getAnnotation(RJRpcErrors.class);
         if (errors == null) {
             return EMPTY_ERROR_LIST;
         }
         return Arrays.stream(errors.value())
-                .map(rpcError -> new JsonRpcErrorInfo(rpcError.exception(), rpcError.code(), rpcError.message(), rpcError.data()))
+                .map(this::getJsonRpcErrorInfo)
                 .collect(Collectors.toList());
+    }
+
+    private JsonRpcErrorInfo getJsonRpcErrorInfo(uz.devops.rpc4rj.annotation.RJRpcError rpcError) {
+        log.trace("getJsonRpcErrorInfo");
+        return new JsonRpcErrorInfo(rpcError.exception(), rpcError.code(), getOptionalString(rpcError.message()), getOptionalString(rpcError.data()));
+    }
+
+    private String getOptionalString(String text) {
+        log.trace("getOptionalString started for : {}", text);
+        return Objects.equals(text, "") ? null : text;
     }
 
     public List<JsonRpcParamInfo> getParamInfo(Method method) {
@@ -110,7 +120,7 @@ public class ResolverUtil {
     @SneakyThrows
     private String getParamName(Parameter parameter) {
         log.trace("getParamName started for param with type : {}", parameter.getType());
-        var rpcParam = parameter.getAnnotation(RpcParam.class);
+        var rpcParam = parameter.getAnnotation(RJRpcParam.class);
 
         if (rpcParam == null) {
             log.trace("method parameter name annotation is not set");

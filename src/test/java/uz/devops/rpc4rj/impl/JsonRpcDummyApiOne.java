@@ -13,7 +13,7 @@ import java.util.ArrayList;
 @Slf4j
 @Service
 @Validated
-@RpcService(JsonRpcDummyApiOne.URI)
+@RJRpcService(JsonRpcDummyApiOne.URI)
 public class JsonRpcDummyApiOne {
 
     public static final String METHOD_DUMMY_MONO = "dummyMethodMono";
@@ -27,32 +27,32 @@ public class JsonRpcDummyApiOne {
     public static final String DUMMY_DATA = "DUMMY_DATA";
     public static final String DUMMY_DATA2 = "DUMMY_DATA2";
 
-    @RpcMethod(METHOD_DUMMY_MONO)
+    @RJRpcMethod(METHOD_DUMMY_MONO)
     public Mono<DummyResponse> dummyMono(
-            @Valid @RpcParam("requestOne") DummyRequestOne requestOne,
-            @Valid @RpcParam("requestTwo") DummyRequestTwo requestTwo
+            @Valid @RJRpcParam("requestOne") DummyRequestOne requestOne,
+            @Valid @RJRpcParam("requestTwo") DummyRequestTwo requestTwo
     ) {
         log.trace("dummyMethod started");
         return Mono.just(new DummyResponse(requestOne.getData() + requestTwo.getData(), "SUCCESS"));
     }
 
-    @RpcMethod(METHOD_DUMMY_MONO_CUSTOM_ERROR)
-    @RpcErrors({
-            @RpcError(exception = DummyActiveException.class, code = DUMMY_ERROR_CODE, message = DUMMY_MESSAGE, data = DUMMY_DATA),
-            @RpcError(exception = DummyInactiveException.class, code = DUMMY_ERROR_CODE2, message = DUMMY_MESSAGE2, data = DUMMY_DATA2)
+    @RJRpcMethod(METHOD_DUMMY_MONO_CUSTOM_ERROR)
+    @RJRpcErrors({
+            @RJRpcError(exception = DummyActiveException.class, code = DUMMY_ERROR_CODE, message = DUMMY_MESSAGE, data = DUMMY_DATA),
+            @RJRpcError(exception = DummyInactiveException.class, code = DUMMY_ERROR_CODE2, message = DUMMY_MESSAGE2, data = DUMMY_DATA2)
     })
     public Mono<DummyResponse> dummyMonoCustomError(
-            @Valid @RpcParam("requestOne") DummyRequestOne requestOne,
-            @Valid @RpcParam("requestTwo") DummyRequestTwo requestTwo
+            @Valid @RJRpcParam("requestOne") DummyRequestOne requestOne,
+            @Valid @RJRpcParam("requestTwo") DummyRequestTwo requestTwo
     ) throws DummyActiveException {
         log.trace("dummyMonoCustomError started");
         throw new DummyActiveException();
     }
 
-    @RpcMethod(METHOD_DUMMY_FLUX)
+    @RJRpcMethod(METHOD_DUMMY_FLUX)
     public Flux<DummyResponse> dummyFlux(
-            @Valid @RpcParam("requestOne") DummyRequestOne requestOne,
-            @Valid @RpcParam("requestTwo") DummyRequestTwo requestTwo
+            @Valid @RJRpcParam("requestOne") DummyRequestOne requestOne,
+            @Valid @RJRpcParam("requestTwo") DummyRequestTwo requestTwo
     ) {
         log.trace("dummyMethod started");
         var result = new ArrayList<DummyResponse>();

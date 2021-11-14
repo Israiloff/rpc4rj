@@ -1,12 +1,12 @@
 package uz.devops.rpc4rj.annotation;
 
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.lang.annotation.*;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface RpcMethod {
-    @NotBlank
+@Target(ElementType.PARAMETER)
+public @interface RJRpcParam {
+    @NotNull
     String value();
 }

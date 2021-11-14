@@ -14,23 +14,25 @@ import uz.devops.rpc4rj.model.JsonRpcRequest;
 import uz.devops.rpc4rj.model.JsonRpcResponse;
 import uz.devops.rpc4rj.service.EndpointHandler;
 import uz.devops.rpc4rj.service.ErrorHandlerContext;
-import uz.devops.rpc4rj.web.rest.JsonRpcController;
+import uz.devops.rpc4rj.util.ErrorHandlerUtil;
+import uz.devops.rpc4rj.web.rest.RJRpcController;
 
 @Slf4j
 @Component
 @Order(-3)
-@RestControllerAdvice(assignableTypes = {JsonRpcController.class, ErrorHandlerContext.class, EndpointHandler.class})
+@RestControllerAdvice(assignableTypes = {RJRpcController.class, ErrorHandlerContext.class, EndpointHandler.class})
 @RequiredArgsConstructor
-public class JsonRpcErrorTranslator {
+public class RJRpcErrorTranslator {
 
     private final ErrorHandlerContext errorHandlerContext;
+    private final ErrorHandlerUtil util;
 
     @SneakyThrows
     @ExceptionHandler(Throwable.class)
     public Mono<ResponseEntity<JsonRpcResponse>> handle(Throwable e, ServerWebExchange serverWebExchange) {
         log.error("error occurred while processing request", e);
         log.debug("error handle started for exception : {}", e.getClass().getSimpleName());
-        var request = (JsonRpcRequest) serverWebExchange.getAttributes().get(JsonRpcController.REACTIVE_REQUEST_KEY);
-        return Mono.just(ResponseEntity.ok(errorHandlerContext.handle(e, request)));
+        var request = (JsonRpcRequest) serverWebExchange.getAttributes().get(RJRpcController.REACTIVE_REQUEST_KEY);
+        return util.wrapResponse(errorHandlerContext.handle(e, request));
     }
 }

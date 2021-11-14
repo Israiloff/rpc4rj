@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class RpcConfiguration {
+public class RJRpcConfiguration {
 
     public static final String OBJECT_MAPPER_BEAN_NAME = "objectMapperBeanName";
 

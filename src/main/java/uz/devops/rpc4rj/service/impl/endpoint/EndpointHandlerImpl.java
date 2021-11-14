@@ -16,13 +16,13 @@ import uz.devops.rpc4rj.model.JsonRpcRequest;
 import uz.devops.rpc4rj.model.JsonRpcServiceInfo;
 import uz.devops.rpc4rj.model.RpcServiceMetaData;
 import uz.devops.rpc4rj.service.EndpointHandler;
-import uz.devops.rpc4rj.service.JsonRpcProcessor;
+import uz.devops.rpc4rj.service.RJRpcProcessor;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.lang.reflect.Method;
 
-import static uz.devops.rpc4rj.web.rest.JsonRpcController.REACTIVE_REQUEST_KEY;
+import static uz.devops.rpc4rj.web.rest.RJRpcController.REACTIVE_REQUEST_KEY;
 
 @Slf4j
 @Component
@@ -31,7 +31,7 @@ public class EndpointHandlerImpl implements EndpointHandler<ServerWebExchange> {
 
     private final RequestMappingHandlerMapping handlerMapping;
     private final RpcServiceMetaData metaData;
-    private final JsonRpcProcessor processor;
+    private final RJRpcProcessor processor;
 
     public Mono<ResponseEntity<?>> handle(@Valid @RequestBody @NotNull JsonRpcRequest request,
                                           ServerWebExchange exchange) throws Exception {
