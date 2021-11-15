@@ -1,15 +1,12 @@
-package uz.devops.rpc4rj.impl;
+package uz.devops.rpc4rj.dummy.model;
 
 import lombok.Value;
 
 import javax.validation.constraints.NotNull;
 
 @Value
-public class ApiOneRequest {
+public class ApiTwoRequest {
 
     @NotNull
     DummyRequestOne requestOne;
-
-    @NotNull
-    DummyRequestTwo requestTwo;
 }

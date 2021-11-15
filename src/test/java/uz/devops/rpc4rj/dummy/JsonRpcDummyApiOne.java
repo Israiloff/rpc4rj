@@ -1,4 +1,4 @@
-package uz.devops.rpc4rj.impl;
+package uz.devops.rpc4rj.dummy;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -6,6 +6,9 @@ import org.springframework.validation.annotation.Validated;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import uz.devops.rpc4rj.annotation.*;
+import uz.devops.rpc4rj.dummy.model.DummyRequestOne;
+import uz.devops.rpc4rj.dummy.model.DummyRequestTwo;
+import uz.devops.rpc4rj.dummy.model.DummyResponse;
 
 import javax.validation.Valid;
 import java.util.ArrayList;

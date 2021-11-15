@@ -10,10 +10,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.test.StepVerifier;
 import uz.devops.rpc4rj.IntegrationTest;
+import uz.devops.rpc4rj.dummy.JsonRpcDummyApiOne;
+import uz.devops.rpc4rj.dummy.JsonRpcDummyApiThree;
+import uz.devops.rpc4rj.dummy.JsonRpcDummyApiTwo;
+import uz.devops.rpc4rj.dummy.model.*;
 import uz.devops.rpc4rj.error.exception.InvalidParamsException;
 import uz.devops.rpc4rj.error.exception.JsonRpcVersionValidationException;
 import uz.devops.rpc4rj.error.exception.MethodNotFoundException;
-import uz.devops.rpc4rj.impl.*;
 import uz.devops.rpc4rj.model.JsonRpcError;
 import uz.devops.rpc4rj.model.JsonRpcRequest;
 import uz.devops.rpc4rj.model.JsonRpcResponse;
@@ -36,12 +39,16 @@ class RJRpcProcessorTest {
     public static final String URI_API_1 = JsonRpcDummyApiOne.URI;
     public static final String URI_API_2 = JsonRpcDummyApiTwo.URI;
     public static final String WRONG_RPC_VERSION = "1";
+    public static final String URI_API_3 = "/api/rpc/dummy/three";
 
     @Autowired
     private WebTestClient webTestClient;
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private JsonRpcDummyApiThree apiThree;
 
     @Test
     void monoMethodSuccessApiOneTest() {
@@ -355,6 +362,36 @@ class RJRpcProcessorTest {
                         }
                 )
                 .verifyComplete();
+    }
+
+    @Test
+    void monoMethodSuccessApiThreeTest() {
+        log.debug("monoMethodSuccessApiThreeTest started");
+
+        var param = new ApiOneRequest(new DummyRequestOne(MONO_DATA_1), new DummyRequestTwo(MONO_DATA_2));
+        var request = new JsonRpcRequest(MONO_REQUEST_ID, JSONRPC, JsonRpcDummyApiOne.METHOD_DUMMY_MONO, param);
+
+        var result = webTestClient
+                .post()
+                .uri(URI_API_3)
+                .accept(MEDIA_TYPE)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectHeader()
+                .contentType(MEDIA_TYPE)
+                .returnResult(JsonRpcResponse.class)
+                .getResponseBody()
+                .next()
+                .block();
+
+        Assertions.assertNotNull(result);
+        assertBaseParams(result, MONO_REQUEST_ID);
+
+        var resultParam = objectMapper.convertValue(result.getResult(), DummyResponse.class);
+        Assertions.assertEquals(param.getRequestOne().getData() + param.getRequestTwo().getData(), resultParam.getRequestData());
+        Assertions.assertEquals("SUCCESS", resultParam.getResult());
     }
 
     private void assertBaseParams(JsonRpcResponse response, Long requestId) {

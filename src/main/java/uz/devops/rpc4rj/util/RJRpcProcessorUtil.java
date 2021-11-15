@@ -8,7 +8,6 @@ import org.reflections.Reflections;
 import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
-import org.reflections.util.FilterBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -72,9 +71,7 @@ public class RJRpcProcessorUtil {
         log.trace("getConfigurationBuilder started");
         return new ConfigurationBuilder()
                 .setScanners(new TypeAnnotationsScanner())
-                // TODO: 11-Nov-21 change package scan to common solution
-                .setUrls(ClasspathHelper.forPackage("uz.devops"))
-                .filterInputsBy(new FilterBuilder().includePackage("uz.devops"));
+                .setUrls(ClasspathHelper.forJavaClassPath());
     }
 
     public List<JsonRpcServiceInfo> getRpcInfoListByMethod(Class<?> service) {
