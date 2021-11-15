@@ -11,7 +11,6 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.test.StepVerifier;
 import uz.devops.rpc4rj.IntegrationTest;
 import uz.devops.rpc4rj.dummy.JsonRpcDummyApiOne;
-import uz.devops.rpc4rj.dummy.JsonRpcDummyApiThree;
 import uz.devops.rpc4rj.dummy.JsonRpcDummyApiTwo;
 import uz.devops.rpc4rj.dummy.model.*;
 import uz.devops.rpc4rj.error.exception.InvalidParamsException;
@@ -22,6 +21,8 @@ import uz.devops.rpc4rj.model.JsonRpcRequest;
 import uz.devops.rpc4rj.model.JsonRpcResponse;
 
 import javax.validation.ConstraintViolationException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @IntegrationTest
@@ -40,6 +41,7 @@ class RJRpcProcessorTest {
     public static final String URI_API_2 = JsonRpcDummyApiTwo.URI;
     public static final String WRONG_RPC_VERSION = "1";
     public static final String URI_API_3 = "/api/rpc/dummy/three";
+    public static final int GATLING_REQUESTS_COUNT = 50;
 
     @Autowired
     private WebTestClient webTestClient;
@@ -47,12 +49,9 @@ class RJRpcProcessorTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private JsonRpcDummyApiThree apiThree;
-
     @Test
     void monoMethodSuccessApiOneTest() {
-        log.debug("monoMethodTest started");
+        log.debug("monoMethodSuccessApiOneTest started");
 
         var param = new ApiOneRequest(new DummyRequestOne(MONO_DATA_1), new DummyRequestTwo(MONO_DATA_2));
         var request = new JsonRpcRequest(MONO_REQUEST_ID, JSONRPC, JsonRpcDummyApiOne.METHOD_DUMMY_MONO, param);
@@ -78,6 +77,34 @@ class RJRpcProcessorTest {
         var resultParam = objectMapper.convertValue(result.getResult(), DummyResponse.class);
         Assertions.assertEquals(param.getRequestOne().getData() + param.getRequestTwo().getData(), resultParam.getRequestData());
         Assertions.assertEquals("SUCCESS", resultParam.getResult());
+    }
+
+    @Test
+    void monoMethodSuccessApiOneGatlingTest() {
+        log.debug("monoMethodSuccessApiOneGatlingTest started");
+
+        getRequests(false, true).parallelStream().forEach(request -> {
+            var result = webTestClient
+                    .post()
+                    .uri(URI_API_1)
+                    .accept(MEDIA_TYPE)
+                    .bodyValue(request)
+                    .exchange()
+                    .expectStatus()
+                    .isOk()
+                    .expectHeader()
+                    .contentType(MEDIA_TYPE)
+                    .returnResult(JsonRpcResponse.class)
+                    .getResponseBody()
+                    .next()
+                    .block();
+
+            Assertions.assertNotNull(result);
+            assertBaseParams(result, request.getId());
+
+            var resultParam = objectMapper.convertValue(result.getResult(), DummyResponse.class);
+            Assertions.assertEquals("SUCCESS", resultParam.getResult());
+        });
     }
 
     @Test
@@ -138,6 +165,65 @@ class RJRpcProcessorTest {
                         }
                 )
                 .verifyComplete();
+    }
+
+    @Test
+    void fluxMethodSuccessApiOneGatlingTest() {
+        log.debug("fluxMethodSuccessApiOneGatlingTest started");
+
+        getRequests(false, false).parallelStream().forEach(request -> {
+            var result = webTestClient
+                    .post()
+                    .uri(URI_API_1)
+                    .accept(MEDIA_TYPE)
+                    .bodyValue(request)
+                    .exchange()
+                    .expectStatus()
+                    .isOk()
+                    .expectHeader()
+                    .contentType(MEDIA_TYPE)
+                    .returnResult(JsonRpcResponse.class)
+                    .getResponseBody();
+
+            StepVerifier
+                    .create(result)
+                    .expectNextMatches(
+                            jsonRpcResponse -> {
+                                assertBaseParams(jsonRpcResponse, request.getId());
+                                var response = objectMapper.convertValue(jsonRpcResponse.getResult(), DummyResponse.class);
+                                return response.getResult().equals("0");
+                            }
+                    )
+                    .expectNextMatches(
+                            jsonRpcResponse -> {
+                                assertBaseParams(jsonRpcResponse, request.getId());
+                                var response = objectMapper.convertValue(jsonRpcResponse.getResult(), DummyResponse.class);
+                                return response.getResult().equals("1");
+                            }
+                    )
+                    .expectNextMatches(
+                            jsonRpcResponse -> {
+                                assertBaseParams(jsonRpcResponse, request.getId());
+                                var response = objectMapper.convertValue(jsonRpcResponse.getResult(), DummyResponse.class);
+                                return response.getResult().equals("2");
+                            }
+                    )
+                    .expectNextMatches(
+                            jsonRpcResponse -> {
+                                assertBaseParams(jsonRpcResponse, request.getId());
+                                var response = objectMapper.convertValue(jsonRpcResponse.getResult(), DummyResponse.class);
+                                return response.getResult().equals("3");
+                            }
+                    )
+                    .expectNextMatches(
+                            jsonRpcResponse -> {
+                                assertBaseParams(jsonRpcResponse, request.getId());
+                                var response = objectMapper.convertValue(jsonRpcResponse.getResult(), DummyResponse.class);
+                                return response.getResult().equals("4");
+                            }
+                    )
+                    .verifyComplete();
+        });
     }
 
     @Test
@@ -231,6 +317,36 @@ class RJRpcProcessorTest {
         Assertions.assertEquals(ConstraintViolationException.class.getSimpleName(), error.getData());
         Assertions.assertNotNull(error.getMessage());
         Assertions.assertEquals(-32600, error.getCode());
+    }
+
+    @Test
+    void argsValidationErrorApiOneGatlingTest() {
+        log.debug("argsValidationErrorApiOneGatlingTest started");
+
+        getRequests(true, true).parallelStream().forEach(request -> {
+            var result = webTestClient
+                    .post()
+                    .uri(URI_API_1)
+                    .accept(MEDIA_TYPE)
+                    .bodyValue(request)
+                    .exchange()
+                    .expectStatus()
+                    .isOk()
+                    .expectHeader()
+                    .contentType(MEDIA_TYPE)
+                    .returnResult(JsonRpcResponse.class)
+                    .getResponseBody()
+                    .next()
+                    .block();
+
+            Assertions.assertNotNull(result);
+            assertBaseParams(result, request.getId());
+
+            var error = objectMapper.convertValue(result.getError(), JsonRpcError.class);
+            Assertions.assertEquals(ConstraintViolationException.class.getSimpleName(), error.getData());
+            Assertions.assertNotNull(error.getMessage());
+            Assertions.assertEquals(-32600, error.getCode());
+        });
     }
 
     @Test
@@ -397,5 +513,16 @@ class RJRpcProcessorTest {
     private void assertBaseParams(JsonRpcResponse response, Long requestId) {
         Assertions.assertEquals(requestId, response.getId());
         Assertions.assertEquals(JSONRPC, response.getJsonrpc());
+    }
+
+    private List<JsonRpcRequest> getRequests(Boolean isValidationCase, Boolean isMonoCase) {
+        log.trace("getRequests started");
+        var requests = new ArrayList<JsonRpcRequest>();
+        for (var i = 0; i < GATLING_REQUESTS_COUNT; i++) {
+            var param = new ApiOneRequest(new DummyRequestOne(isValidationCase ? null : String.valueOf(i)),
+                    new DummyRequestTwo(String.valueOf(i + 1)));
+            requests.add(new JsonRpcRequest((long) i, JSONRPC, isMonoCase ? JsonRpcDummyApiOne.METHOD_DUMMY_MONO : JsonRpcDummyApiOne.METHOD_DUMMY_FLUX, param));
+        }
+        return requests;
     }
 }
