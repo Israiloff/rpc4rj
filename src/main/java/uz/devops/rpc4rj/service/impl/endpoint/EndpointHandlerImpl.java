@@ -3,6 +3,7 @@ package uz.devops.rpc4rj.service.impl.endpoint;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -29,6 +30,7 @@ import static uz.devops.rpc4rj.web.rest.RJRpcController.REACTIVE_REQUEST_KEY;
 @RequiredArgsConstructor
 public class EndpointHandlerImpl implements EndpointHandler<ServerWebExchange> {
 
+    @Qualifier("requestMappingHandlerMapping")
     private final RequestMappingHandlerMapping handlerMapping;
     private final RpcServiceMetaData metaData;
     private final RJRpcProcessor processor;
