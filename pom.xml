@@ -13,7 +13,7 @@
     <artifactId>rpc4rj</artifactId>
     <name>rpc4rj</name>
     <description>Reactive Json RPC module</description>
-    <version>0.2.3</version>
+    <version>0.2.4</version>
 
     <properties>
         <java.version>11</java.version>

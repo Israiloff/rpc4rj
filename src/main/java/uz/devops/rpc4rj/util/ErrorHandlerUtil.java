@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import uz.devops.rpc4rj.model.JsonRpcError;
+import uz.devops.rpc4rj.model.JsonRpcErrorInfo;
 import uz.devops.rpc4rj.model.JsonRpcRequest;
 import uz.devops.rpc4rj.model.JsonRpcResponse;
 
@@ -37,5 +38,17 @@ public class ErrorHandlerUtil {
     private JsonRpcError getError(Throwable e, Integer code, String message) {
         log.trace("getError started");
         return new JsonRpcError(code, message, e.getClass().getSimpleName());
+    }
+
+    public JsonRpcResponse getJsonRpcResponse(JsonRpcRequest request, JsonRpcErrorInfo errorInfo, Throwable exception) {
+        return new JsonRpcResponse(request.getId(), request.getJsonrpc(), null, getError(errorInfo, exception));
+    }
+
+    private JsonRpcError getError(JsonRpcErrorInfo errorInfo, Throwable exception) {
+        return new JsonRpcError(errorInfo.getCode(), getString(errorInfo.getMessage(), exception.getMessage()), getString(errorInfo.getData(), exception.getClass().getName()));
+    }
+
+    private String getString(String value, String fallback) {
+        return value == null || value.equals("") ? fallback : value;
     }
 }

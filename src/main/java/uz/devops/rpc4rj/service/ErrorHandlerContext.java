@@ -3,11 +3,11 @@ package uz.devops.rpc4rj.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import uz.devops.rpc4rj.model.JsonRpcError;
 import uz.devops.rpc4rj.model.JsonRpcRequest;
 import uz.devops.rpc4rj.model.JsonRpcResponse;
 import uz.devops.rpc4rj.model.RpcServiceMetaData;
 import uz.devops.rpc4rj.service.impl.error.CommonErrorHandler;
+import uz.devops.rpc4rj.util.ErrorHandlerUtil;
 import uz.devops.rpc4rj.util.ReflectionUtil;
 
 import javax.validation.Valid;
@@ -22,8 +22,11 @@ public class ErrorHandlerContext {
     private final ErrorHandler commonHandler;
     private final RpcServiceMetaData metaData;
     private final ReflectionUtil reflectionUtil;
+    private final ErrorHandlerUtil handlerUtil;
 
-    public ErrorHandlerContext(List<ErrorHandler> handlers, @Qualifier(CommonErrorHandler.BEAN_NAME) ErrorHandler commonHandler, RpcServiceMetaData metaData, ReflectionUtil reflectionUtil) {
+    public ErrorHandlerContext(List<ErrorHandler> handlers, @Qualifier(CommonErrorHandler.BEAN_NAME) ErrorHandler commonHandler,
+                               RpcServiceMetaData metaData, ReflectionUtil reflectionUtil, ErrorHandlerUtil handlerUtil) {
+        this.handlerUtil = handlerUtil;
         handlers.remove(commonHandler);
         this.commonHandler = commonHandler;
         this.handlers = handlers;
@@ -41,7 +44,7 @@ public class ErrorHandlerContext {
                 .flatMap(errors -> errors.getErrors()
                         .stream()
                         .filter(error -> error.getException().equals(exception.getClass())))
-                .map(errorInfo -> getJsonRpcResponse(request, errorInfo))
+                .map(errorInfo -> handlerUtil.getJsonRpcResponse(request, errorInfo, exception))
                 .findFirst()
                 .orElseGet(() -> handlers
                         .stream()
@@ -49,13 +52,5 @@ public class ErrorHandlerContext {
                         .map(errorHandler -> errorHandler.buildResponse(exception, request))
                         .findFirst()
                         .orElse(commonHandler.buildResponse(exception, request)));
-    }
-
-    private JsonRpcResponse getJsonRpcResponse(JsonRpcRequest request, uz.devops.rpc4rj.model.JsonRpcErrorInfo errorInfo) {
-        return new JsonRpcResponse(request.getId(), request.getJsonrpc(), null, getError(errorInfo));
-    }
-
-    private JsonRpcError getError(uz.devops.rpc4rj.model.JsonRpcErrorInfo errorInfo) {
-        return new JsonRpcError(errorInfo.getCode(), errorInfo.getMessage(), errorInfo.getData());
     }
 }
