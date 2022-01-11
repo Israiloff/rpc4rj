@@ -35,7 +35,7 @@ public class ErrorHandlerContext {
     }
 
     public JsonRpcResponse handle(@Valid Throwable e, JsonRpcRequest request) {
-        log.debug("commonHandler started for exception : {}", e.getClass().getSimpleName());
+        log.debug("commonHandler started", e);
 
         var exception = reflectionUtil.extractError(e);
         return metaData.getRpcInfoList()
