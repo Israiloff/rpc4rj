@@ -61,19 +61,6 @@ public class RJRpcProcessorUtil {
                 .collect(Collectors.toList());
     }
 
-    private Set<Class<?>> getRpcImplTypes() {
-        log.trace("getRpcImplTypes started");
-        return new Reflections(getConfigurationBuilder())
-                .getTypesAnnotatedWith(RJRpcService.class);
-    }
-
-    private ConfigurationBuilder getConfigurationBuilder() {
-        log.trace("getConfigurationBuilder started");
-        return new ConfigurationBuilder()
-                .setScanners(new TypeAnnotationsScanner())
-                .setUrls(ClasspathHelper.forJavaClassPath());
-    }
-
     public List<JsonRpcServiceInfo> getRpcInfoListByMethod(Class<?> service) {
         log.trace("getJsonRpcInfo started");
 
@@ -109,35 +96,12 @@ public class RJRpcProcessorUtil {
                 .collect(Collectors.toList());
     }
 
-    private JsonRpcErrorInfo getJsonRpcErrorInfo(uz.devops.rpc4rj.annotation.RJRpcError rpcError) {
-        log.trace("getJsonRpcErrorInfo");
-        return new JsonRpcErrorInfo(rpcError.exception(), rpcError.code(), getOptionalString(rpcError.message()), getOptionalString(rpcError.data()));
-    }
-
-    private String getOptionalString(String text) {
-        log.trace("getOptionalString started for : {}", text);
-        return Objects.equals(text, "") ? null : text;
-    }
-
     public List<JsonRpcParamInfo> getParamInfo(Method method) {
         log.trace("getAnnotation started");
         return Arrays
                 .stream(method.getParameters())
                 .map(parameter -> new JsonRpcParamInfo(getParamName(parameter), parameter.getType(), parameter.getName()))
                 .collect(Collectors.toList());
-    }
-
-    @SneakyThrows
-    private String getParamName(Parameter parameter) {
-        log.trace("getParamName started for param with type : {}", parameter.getType());
-        var rpcParam = parameter.getAnnotation(RJRpcParam.class);
-
-        if (rpcParam == null) {
-            log.trace("method parameter name annotation is not set");
-            throw new MethodParamsMetaDataException();
-        }
-
-        return rpcParam.value();
     }
 
     public boolean isDesiredMethod(@NotNull JsonRpcRequest request, JsonRpcServiceInfo rpcInfo) {
@@ -166,18 +130,11 @@ public class RJRpcProcessorUtil {
                 .map(param -> getParam(params, param))
                 .toArray();
 
+        var methodParams = jsonRpcServiceInfo.getMethod().getParameterTypes();
+
+        validateMethodParams(args, methodParams);
+
         return jsonRpcServiceInfo.getMethod().invoke(jsonRpcServiceInfo.getInstance(), args);
-    }
-
-    @SneakyThrows
-    private Object getParam(LinkedHashMap<String, ?> params, JsonRpcParamInfo param) {
-        log.trace("getParam started");
-
-        if (params.get(param.getName()) == null) {
-            throw new InvalidParamsException();
-        }
-
-        return objectMapper.convertValue(params.get(param.getName()), param.getType());
     }
 
     public Mono<ResponseEntity<?>> mapResult(JsonRpcRequest request, JsonRpcServiceInfo jsonRpcServiceInfo, Object result)
@@ -195,6 +152,68 @@ public class RJRpcProcessorUtil {
         }
 
         throw new InvalidWrapperException();
+    }
+
+    private Set<Class<?>> getRpcImplTypes() {
+        log.trace("getRpcImplTypes started");
+        return new Reflections(getConfigurationBuilder())
+                .getTypesAnnotatedWith(RJRpcService.class);
+    }
+
+    private ConfigurationBuilder getConfigurationBuilder() {
+        log.trace("getConfigurationBuilder started");
+        return new ConfigurationBuilder()
+                .setScanners(new TypeAnnotationsScanner())
+                .setUrls(ClasspathHelper.forJavaClassPath());
+    }
+
+    private JsonRpcErrorInfo getJsonRpcErrorInfo(uz.devops.rpc4rj.annotation.RJRpcError rpcError) {
+        log.trace("getJsonRpcErrorInfo");
+        return new JsonRpcErrorInfo(rpcError.exception(), rpcError.code(), getOptionalString(rpcError.message()), getOptionalString(rpcError.data()));
+    }
+
+    private String getOptionalString(String text) {
+        log.trace("getOptionalString started for : {}", text);
+        return Objects.equals(text, "") ? null : text;
+    }
+
+    @SneakyThrows
+    private String getParamName(Parameter parameter) {
+        log.trace("getParamName started for param with type : {}", parameter.getType());
+        var rpcParam = parameter.getAnnotation(RJRpcParam.class);
+
+        if (rpcParam == null) {
+            log.trace("method parameter name annotation is not set");
+            throw new MethodParamsMetaDataException();
+        }
+
+        return rpcParam.value();
+    }
+
+    private void validateMethodParams(Object[] args, Class<?>[] methodParams) throws InvalidParamsException {
+        if (args.length != methodParams.length) {
+            log.warn("given parameters count not match to target method's. execution terminated");
+            throw new InvalidParamsException();
+        }
+
+
+        for (var index = 0; index < args.length; index++) {
+            if (args[index] != null && !args[index].getClass().equals(methodParams[index])) {
+                log.warn("one of method params type is invalid. request arg - '{}' : method arg type - {}", args[index], methodParams[index]);
+                throw new InvalidParamsException();
+            }
+        }
+    }
+
+    @SneakyThrows
+    private Object getParam(LinkedHashMap<String, ?> params, JsonRpcParamInfo param) {
+        log.trace("getParam started");
+
+        if (params.get(param.getName()) == null) {
+            throw new InvalidParamsException();
+        }
+
+        return objectMapper.convertValue(params.get(param.getName()), param.getType());
     }
 
     private JsonRpcResponse mapToJsonRpcResponse(JsonRpcRequest request, Object response) {
