@@ -32,7 +32,7 @@ interface FooService{
 ```
 
 > **PATH_TO_API** is your web path to API (e.g. if the value of the path is ***"/path/to/api"*** then the target url will be 
-> http://YOUR_HOST_ADDRESS/path/to/api).
+***http://YOUR_HOST_ADDRESS/path/to/api***).
 
 3. Mark the target methods with @RJRpcMethod and method's arguments with @RJRpcParam annotations.
 
