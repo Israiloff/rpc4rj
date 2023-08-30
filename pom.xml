@@ -10,7 +10,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>com.israiloff</groupId>
+    <groupId>io.github.israiloff</groupId>
     <artifactId>rpc4rj</artifactId>
     <version>1.0.0</version>
 
