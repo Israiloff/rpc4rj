@@ -1,4 +1,4 @@
-# Reactive JSON RPC 2.0 plugin for [Spring Boot](https://spring.io/projects/spring-boot).
+# Reactive JSON RPC 2.0 plugin for the [Spring Boot](https://spring.io/projects/spring-boot).
 
 [This](https://github.com/Israiloff/rpc4rj) project aims to simplify web exchange via 
 [JSON RPC 2.0](https://www.jsonrpc.org/specification) protocol in reactive manner. Names of the components and their 
