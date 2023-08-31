@@ -1,3 +1,5 @@
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.israiloff/broker/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.israiloff/broker)
+
 # Reactive JSON RPC 2.0 plugin for the [Spring Boot](https://spring.io/projects/spring-boot).
 
 [This](https://github.com/Israiloff/rpc4rj) project aims to simplify web exchange via 
